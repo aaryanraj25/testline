@@ -12,9 +12,11 @@ A modern, interactive Flutter quiz application with animated results and a gamif
 - Responsive design with smooth animations
 
 ## Submission
-1. Video Link: 
-2. Apk Link:
-3. Screenshot Link:
+1. Video Link: https://drive.google.com/file/d/1wfJ6gPgIdPEXC2ylu6jStf34bYIxbZfp/view?usp=drive_link
+
+2. Apk Link: https://drive.google.com/file/d1gjKOnuqcjhZo0o-kj4zadK-tXX1wCzOO/view?usp=sharing
+
+3. Screenshot Link: https://drive.google.com/drive/folders/1duKbwmuASUCo575qD3Q0XByuWwhEjPcO?usp=drive_link
 
 ## Prerequisites
 
