@@ -8,7 +8,7 @@ class QuizLoading extends QuizState {}
 
 class QuizLoaded extends QuizState {
   final Quiz quiz;
-  final Map<int, int> answers; // questionId -> optionId
+  final Map<int, int> answers;
 
   QuizLoaded({
     required this.quiz,

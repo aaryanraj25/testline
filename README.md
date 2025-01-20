@@ -1,16 +1,96 @@
-# testline
+# Testline App
 
-A new Flutter project.
+A modern, interactive Flutter quiz application with animated results and a gamified learning experience.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Interactive quiz interface with multiple-choice questions
+- Animated score reveal and results page
+- Detailed feedback for each question
+- Progress tracking and achievements
+- Daily challenges with bonus points
+- Responsive design with smooth animations
 
-A few resources to get you started if this is your first Flutter project:
+## Submission
+1. Video Link: 
+2. Apk Link:
+3. Screenshot Link:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Prerequisites
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter SDK (2.5.0 or higher)
+- Dart SDK (2.14.0 or higher)
+- Android Studio / VS Code with Flutter extensions
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/aaryanraj25/quiz-app.git
+```
+
+2. Navigate to the project directory:
+```bash
+cd testline
+```
+
+3. Install dependencies:
+```bash
+flutter pub get
+```
+
+4. Run the app:
+```bash
+flutter run
+```
+
+## Configuration
+
+1. Update the `assets` folder with your images:
+```yaml
+# pubspec.yaml
+flutter:
+  assets:
+    - assets/images/trophy.png
+    - assets/images/brain.png
+```
+
+2. Configure app colors in `lib/core/constants/app_colors.dart`:
+```dart
+class AppColors {
+  static const Color primary = Color(0xFF...);
+  static const Color background = Color(0xFF...);
+  // ...
+}
+```
+
+## Usage
+
+1. Create quiz data:
+```dart
+final quiz = Quiz(
+  questions: [
+    Question(
+      id: 1,
+      description: "What is...",
+      options: [...],
+      detailedSolution: "...",
+    ),
+    // ...
+  ],
+);
+```
+
+2. Navigate to the results page:
+```dart
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => ResultsPage(
+      answers: userAnswers,
+      quiz: quiz,
+    ),
+  ),
+);
+```
+

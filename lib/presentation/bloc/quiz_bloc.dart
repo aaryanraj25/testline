@@ -1,15 +1,40 @@
 import 'package:bloc/bloc.dart';
 import 'package:testline/core/usecases/usecases.dart';
+import 'package:testline/domain/entities/quiz.dart';
 import 'package:testline/domain/usecases/usecase.dart';
 import 'package:testline/presentation/bloc/quiz_event.dart';
 import 'package:testline/presentation/bloc/quiz_state.dart';
+import 'package:testline/presentation/widgets/progress.dart';
 
 class QuizBloc extends Bloc<QuizEvent, QuizState> {
   final GetQuiz getQuiz;
+  final ProgressManager progressManager;
 
-  QuizBloc({required this.getQuiz}) : super(QuizInitial()) {
+  QuizBloc({
+    required this.getQuiz,
+    required this.progressManager,
+  }) : super(QuizInitial()) {
     on<LoadQuiz>(_onLoadQuiz);
     on<AnswerQuestion>(_onAnswerQuestion);
+    on<CompleteQuiz>(_onCompleteQuiz);
+  }
+
+  Future<void> _onCompleteQuiz(CompleteQuiz event, Emitter<QuizState> emit) async {
+    if (state is QuizLoaded) {
+      final currentState = state as QuizLoaded;
+      final score = _calculateScore(currentState.answers, currentState.quiz);
+      await progressManager.updateProgress(score, currentState.quiz.questions.length);
+    }
+  }
+
+  int _calculateScore(Map<int, int> answers, Quiz quiz) {
+    int score = 0;
+    answers.forEach((questionId, answerId) {
+      final question = quiz.questions.firstWhere((q) => q.id == questionId);
+      final option = question.options.firstWhere((o) => o.id == answerId);
+      if (option.isCorrect) score++;
+    });
+    return score;
   }
 
   Future<void> _onLoadQuiz(LoadQuiz event, Emitter<QuizState> emit) async {

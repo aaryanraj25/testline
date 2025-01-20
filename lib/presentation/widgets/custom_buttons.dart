@@ -4,13 +4,13 @@ import 'package:testline/core/constants/app_text_styles.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback? onPressed;  // Made nullable
+  final VoidCallback? onPressed; 
   final bool isOutlined;
 
   const CustomButton({
     Key? key,
     required this.text,
-    this.onPressed,  // Made optional
+    this.onPressed, 
     this.isOutlined = false,
   }) : super(key: key);
 
@@ -19,7 +19,7 @@ class CustomButton extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       child: ElevatedButton(
-        onPressed: onPressed,  // ElevatedButton accepts nullable callback
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: isOutlined ? Colors.transparent : 
               onPressed == null ? AppColors.primary.withOpacity(0.5) : AppColors.primary,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:testline/core/constants/app_colors.dart';
 import 'package:testline/core/constants/app_text_styles.dart';
+import 'package:testline/core/constants/assets.dart';
 import 'package:testline/domain/entities/quiz.dart';
 import 'package:testline/presentation/bloc/quiz_bloc.dart';
 import 'package:testline/presentation/bloc/quiz_event.dart';
@@ -115,6 +116,13 @@ class _QuizContentState extends State<QuizContent> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        Positioned.fill(
+          child: Image.asset(
+            Assets.quizBackground,
+            fit: BoxFit.cover,
+            opacity: AlwaysStoppedAnimation(0.1),
+          ),
+        ),
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -137,9 +145,11 @@ class _QuizContentState extends State<QuizContent> {
                   children: [
                     Expanded(
                       child: LinearProgressIndicator(
-                        value: (_currentIndex + 1) / widget.quiz.questions.length,
+                        value:
+                            (_currentIndex + 1) / widget.quiz.questions.length,
                         backgroundColor: AppColors.surface,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppColors.primary),
                       ),
                     ),
                     const SizedBox(width: 16),

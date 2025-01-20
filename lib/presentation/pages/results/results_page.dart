@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:testline/core/constants/app_colors.dart';
 import 'package:testline/core/constants/app_text_styles.dart';
+import 'package:testline/core/constants/assets.dart';
 import 'package:testline/domain/entities/quiz.dart';
+import 'package:testline/presentation/bloc/quiz_bloc.dart';
+import 'package:testline/presentation/bloc/quiz_event.dart';
 import 'package:testline/presentation/widgets/custom_buttons.dart';
 
 class ResultsPage extends StatefulWidget {
@@ -18,7 +22,10 @@ class ResultsPage extends StatefulWidget {
   State<ResultsPage> createState() => _ResultsPageState();
 }
 
-class _ResultsPageState extends State<ResultsPage> {
+class _ResultsPageState extends State<ResultsPage> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scoreAnimation;
+  late Animation<double> _scaleAnimation;
   Set<int> expandedQuestions = {};
 
   int get score {
@@ -31,6 +38,40 @@ class _ResultsPageState extends State<ResultsPage> {
     return correct;
   }
 
+  @override
+  void initState() {
+    super.initState();
+    context.read<QuizBloc>().add(CompleteQuiz());
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    
+    _scoreAnimation = Tween<double>(
+      begin: 0,
+      end: score.toDouble(),
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+    
+    _scaleAnimation = Tween<double>(
+      begin: 0.5,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.elasticOut,
+    ));
+    
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void toggleQuestion(int questionId) {
     setState(() {
       if (expandedQuestions.contains(questionId)) {
@@ -39,6 +80,14 @@ class _ResultsPageState extends State<ResultsPage> {
         expandedQuestions.add(questionId);
       }
     });
+  }
+
+  void _retryQuiz(BuildContext context) {
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/quiz',
+      (route) => route.isFirst,
+    );
   }
 
   @override
@@ -52,40 +101,53 @@ class _ResultsPageState extends State<ResultsPage> {
       ),
       body: Column(
         children: [
-          // Score Card
-          Container(
-            padding: const EdgeInsets.all(24),
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  score >= (widget.quiz.questions.length * 0.7)
-                      ? Icons.emoji_events
-                      : Icons.school,
-                  size: 48,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '$score/${widget.quiz.questions.length}',
-                  style: AppTextStyles.heading,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${(score / widget.quiz.questions.length * 100).round()}%',
-                  style: AppTextStyles.body.copyWith(
-                    color: AppColors.textSecondary,
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _scaleAnimation.value,
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        score >= (widget.quiz.questions.length * 0.7)
+                            ? Assets.trophy
+                            : Assets.brain,
+                        height: 100,
+                        width: 100,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        '${_scoreAnimation.value.toInt()}/${widget.quiz.questions.length}',
+                        style: AppTextStyles.heading.copyWith(fontSize: 48),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${(score / widget.quiz.questions.length * 100).round()}%',
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
-
-          // Questions Review
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -107,7 +169,6 @@ class _ResultsPageState extends State<ResultsPage> {
                   ),
                   child: Column(
                     children: [
-                      // Question Header
                       ListTile(
                         onTap: () => toggleQuestion(question.id),
                         leading: Icon(
@@ -124,8 +185,6 @@ class _ResultsPageState extends State<ResultsPage> {
                               : Icons.expand_more,
                         ),
                       ),
-
-                      // Expanded Content
                       if (expandedQuestions.contains(question.id))
                         Padding(
                           padding: const EdgeInsets.all(16),
@@ -134,50 +193,10 @@ class _ResultsPageState extends State<ResultsPage> {
                             children: [
                               const Divider(),
                               const SizedBox(height: 8),
-                              Text(
-                                'Your Answer:',
-                                style: AppTextStyles.body.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: isCorrect
-                                      ? Colors.green.withOpacity(0.2)
-                                      : Colors.red.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: isCorrect ? Colors.green : Colors.red,
-                                  ),
-                                ),
-                                child: Text(
-                                  userAnswer.description,
-                                  style: AppTextStyles.body,
-                                ),
-                              ),
+                              _buildAnswerSection('Your Answer:', userAnswer.description, isCorrect),
                               if (!isCorrect) ...[
                                 const SizedBox(height: 16),
-                                Text(
-                                  'Correct Answer:',
-                                  style: AppTextStyles.body.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.green),
-                                  ),
-                                  child: Text(
-                                    correctAnswer.description,
-                                    style: AppTextStyles.body,
-                                  ),
-                                ),
+                                _buildAnswerSection('Correct Answer:', correctAnswer.description, true),
                               ],
                               const SizedBox(height: 16),
                               Text(
@@ -200,8 +219,6 @@ class _ResultsPageState extends State<ResultsPage> {
               },
             ),
           ),
-
-          // Bottom Buttons
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -209,14 +226,7 @@ class _ResultsPageState extends State<ResultsPage> {
                 Expanded(
                   child: CustomButton(
                     text: 'Try Again',
-                    onPressed: () {
-                      // Clear the quiz state and navigate back to quiz page
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/quiz',
-                        (route) => route.isFirst,
-                      );
-                    },
+                    onPressed: () => _retryQuiz(context),
                   ),
                 ),
               ],
@@ -224,6 +234,37 @@ class _ResultsPageState extends State<ResultsPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAnswerSection(String label, String answer, bool isCorrect) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isCorrect
+                ? Colors.green.withOpacity(0.2)
+                : Colors.red.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isCorrect ? Colors.green : Colors.red,
+            ),
+          ),
+          child: Text(
+            answer,
+            style: AppTextStyles.body,
+          ),
+        ),
+      ],
     );
   }
 }
